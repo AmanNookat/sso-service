@@ -1,0 +1,34 @@
+# Бинарные файлы Go
+*.exe
+*.out
+*.test
+*.swp
+
+# Кэш Go-модулей
+/bin/
+/pkg/
+vendor/
+
+# Файлы сборки
+**/gen/go/**  # Сгенерированные gRPC файлы
+*.so
+*.dll
+*.dylib
+
+# Конфигурационные файлы и секретные данные
+config/*.yaml
+!config/example.yaml  # Можно оставить примерный конфиг
+
+# Логи и временные файлы
+*.log
+/tmp/
+.DS_Store
+Thumbs.db
+
+# IDE и редакторы
+.vscode/
+.idea/
+*.iml
+
+# Go modules
+go.sum
