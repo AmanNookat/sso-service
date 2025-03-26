@@ -21,6 +21,8 @@ type Auth interface {
 
 	// IsAdmin - проверяет, является ли пользователь администратором. Возвращает true, если да, и false, если нет
 	IsAdmin(ctx context.Context, userID int64) (bool, error)
+
+	IsUserExists(ctx context.Context, userID int64) (bool, error)
 }
 
 // serverAPI - структура, которая обрабатывает все входящие gRPC-запросы
@@ -89,6 +91,24 @@ func (s *serverAPI) IsAdmin(ctx context.Context, req *ssov1.IsAdminRequest) (*ss
 	}
 
 	return &ssov1.IsAdminResponse{IsAdmin: isAdmin}, nil
+}
+
+func (s *serverAPI) IsUserExists(ctx context.Context, req *ssov1.IsUserExistsRequest) (*ssov1.IsUserExistsResponse, error) {
+	if req.GetUserId() == emptyValue {
+		return nil, status.Error(codes.InvalidArgument, "user_id is required")
+	}
+
+	isUserExists, err := s.auth.IsUserExists(ctx, req.GetUserId())
+	if err != nil {
+		if errors.Is(err, auth.ErrUserNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+
+	return &ssov1.IsUserExistsResponse{Exists: isUserExists}, nil
 }
 
 func validateLogin(req *ssov1.LoginRequest) error {

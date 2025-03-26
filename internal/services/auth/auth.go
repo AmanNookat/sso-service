@@ -35,6 +35,7 @@ type UserSaver interface {
 type UserProvider interface {
 	User(ctx context.Context, email string) (models.User, error) // Получает пользователя по email.
 	IsAdmin(ctx context.Context, userID int64) (bool, error)     // Проверяет, является ли пользователь администратором.
+	IsUserExists(ctx context.Context, userID int64) (bool, error)
 }
 
 // AppProvider - интерфейс для работы с данными о приложении (если у нас многосервисная архитектура).
@@ -156,7 +157,7 @@ func (a *AuthService) IsAdmin(ctx context.Context, userID int64) (bool, error) {
 
 	isAdmin, err := a.usrProvider.IsAdmin(ctx, userID)
 	if err != nil {
-		if errors.Is(err, storage.ErrAppNotFound) {
+		if errors.Is(err, storage.ErrUserNotFound) {
 			log.Warn("user not found", slog.String("error", err.Error()))
 
 			return false, fmt.Errorf("%s: %w", op, ErrInvalidAppID)
@@ -168,4 +169,29 @@ func (a *AuthService) IsAdmin(ctx context.Context, userID int64) (bool, error) {
 	log.Info("checked if user is admin", slog.Bool("is_admin", isAdmin))
 
 	return isAdmin, nil
+}
+
+func (a *AuthService) IsUserExists(ctx context.Context, userID int64) (bool, error) {
+	const op = "Auth.IsUserExists"
+
+	log := a.log.With(
+		slog.String("op", op),
+		slog.Int64("user_id", userID))
+
+	log.Info("checking if user exists")
+
+	isUserExists, err := a.usrProvider.IsUserExists(ctx, userID)
+	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			log.Warn("user not found", slog.String("error", err.Error()))
+
+			return false, fmt.Errorf("%s: %w", op, ErrInvalidAppID)
+		}
+
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Info("checked if user exists", slog.Bool("exists", isUserExists))
+
+	return isUserExists, nil
 }
