@@ -13,36 +13,41 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Auth struct {
-	log         *slog.Logger
-	usrSaver    UserSaver
-	usrProvider UserProvider
-	appProvider AppProvider
-	tokenTTL    time.Duration
+// Auth - структура сервисного слоя, отвечающая за аутентификацию пользователей.
+type AuthService struct {
+	log         *slog.Logger    // Логгер для записи информации о работе сервиса.
+	usrSaver    UserSaver       // Интерфейс для сохранения пользователей в базе.
+	usrProvider UserProvider    // Интерфейс для получения данных о пользователях.
+	appProvider AppProvider     // Интерфейс для работы с приложениями (если есть разные приложения, например, web и mobile).
+	tokenTTL    time.Duration   // Время жизни токена (JWT, session и т. д.).
 }
 
+// UserSaver - интерфейс для сохранения пользователей в хранилище (например, в базе данных).
 type UserSaver interface {
 	SaveUser(
-		ctx context.Context,
-		email string,
-		passHash []byte,
-	) (uid int64, err error)
+		ctx context.Context, // Контекст запроса (для отмены, таймаутов и т. д.).
+		email string,        // Email пользователя.
+		passHash []byte,     // Хеш пароля пользователя.
+	) (uid int64, err error) // Возвращает ID созданного пользователя или ошибку.
 }
 
+// UserProvider - интерфейс для получения информации о пользователях.
 type UserProvider interface {
-	User(ctx context.Context, email string) (models.User, error)
-	IsAdmin(ctx context.Context, userID int64) (bool, error)
+	User(ctx context.Context, email string) (models.User, error) // Получает пользователя по email.
+	IsAdmin(ctx context.Context, userID int64) (bool, error)     // Проверяет, является ли пользователь администратором.
 }
 
+// AppProvider - интерфейс для работы с данными о приложении (если у нас многосервисная архитектура).
 type AppProvider interface {
-	App(ctx context.Context, appID int) (models.App, error)
+	App(ctx context.Context, appID int) (models.App, error) // Получает информацию о приложении по его ID.
 }
 
+// Предопределенные ошибки, которые могут возникнуть в процессе работы с сервисным слоем.
 var (
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrInvalidAppID       = errors.New("invalid app id")
-	ErrUserExists         = errors.New("user already exists")
-	ErrUserNotFound       = errors.New("user not found")
+	ErrInvalidCredentials = errors.New("invalid credentials") // Ошибка, если логин/пароль неверные.
+	ErrInvalidAppID       = errors.New("invalid app id")      // Ошибка, если передан несуществующий app_id.
+	ErrUserExists         = errors.New("user already exists") // Ошибка, если пользователь с таким email уже зарегистрирован.
+	ErrUserNotFound       = errors.New("user not found")      // Ошибка, если пользователь не найден.
 )
 
 func New(
@@ -50,8 +55,8 @@ func New(
 	userSaver UserSaver,
 	userProvider UserProvider,
 	appProvider AppProvider,
-	tokenTTL time.Duration) *Auth {
-	return &Auth{
+	tokenTTL time.Duration) *AuthService {
+	return &AuthService{
 		usrSaver:    userSaver,
 		usrProvider: userProvider,
 		log:         log,
@@ -60,7 +65,7 @@ func New(
 	}
 }
 
-func (a *Auth) Login(ctx context.Context, email string, password string, appID int) (string, error) {
+func (a *AuthService) Login(ctx context.Context, email string, password string, appID int) (string, error) {
 	const op = "Auth.Login"
 
 	log := a.log.With(
@@ -105,7 +110,7 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 	return token, nil
 }
 
-func (a *Auth) RegisterNewUser(ctx context.Context, email string, pass string) (int64, error) {
+func (a *AuthService) RegisterNewUser(ctx context.Context, email string, pass string) (int64, error) {
 	const op = "auth.RegisterNewUser"
 
 	log := a.log.With(
@@ -140,7 +145,7 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email string, pass string) (
 	return id, nil
 }
 
-func (a *Auth) IsAdmin(ctx context.Context, userID int64) (bool, error) {
+func (a *AuthService) IsAdmin(ctx context.Context, userID int64) (bool, error) {
 	const op = "Auth.IsAdmin"
 
 	log := a.log.With(

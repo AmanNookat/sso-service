@@ -13,16 +13,13 @@ import (
 
 // Auth - интерфейс, который определяет методы аутентификации
 type Auth interface {
-	// Login - выполняет вход пользователя по email и паролю
-	// Возвращает токен, если вход успешный, или ошибку, если нет
+	// Login - выполняет вход пользователя по email и паролю. Возвращает токен, если вход успешный, или ошибку, если нет
 	Login(ctx context.Context, email string, password string, appID int) (token string, err error)
 
-	// RegisterNewUser - регистрирует нового пользователя
-	// Возвращает ID нового пользователя или ошибку
+	// RegisterNewUser - регистрирует нового пользователя. Возвращает ID нового пользователя или ошибку
 	RegisterNewUser(ctx context.Context, email string, password string) (userID int64, err error)
 
-	// IsAdmin - проверяет, является ли пользователь администратором
-	// Возвращает true, если да, и false, если нет
+	// IsAdmin - проверяет, является ли пользователь администратором. Возвращает true, если да, и false, если нет
 	IsAdmin(ctx context.Context, userID int64) (bool, error)
 }
 

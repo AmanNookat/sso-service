@@ -10,10 +10,10 @@ import (
 
 // Config - структура, содержащая настройки приложения
 type Config struct {
-	Env         string        `yaml:"env" env-default:"local"`  // Окружение (local, dev, prod)
-	StoragePath string        `yaml:"storage_path" env-required:"true"` // Путь к файлу хранения (например, SQLite)
-	TokenTTL    time.Duration `yaml:"token_ttl" env-required:"true"` // Время жизни токена
-	GRPC        GRPCConfig    `yaml:"grpc"` // Вложенная структура с настройками gRPC
+	Env           string        `yaml:"env" env-default:"local"`  // Окружение (local, dev, prod)
+	StoragePath   string        `yaml:"storage_path" env-required:"true"` // Путь к файлу хранения (например, SQLite)
+	TokenTTL      time.Duration `yaml:"token_ttl" env-required:"true"` // Время жизни токена
+	GRPC          GRPCConfig    `yaml:"grpc"` // Вложенная структура с настройками gRPC
 }
 
 // GRPCConfig - структура с параметрами gRPC

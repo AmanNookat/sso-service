@@ -2,14 +2,15 @@ package suite
 
 import (
 	"context"
-	ssov1 "github.com/AmanNookat/protos/gen/go/sso"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"os"
 	"sso/internal/config"
 	"strconv"
 	"testing"
+
+	ssov1 "github.com/AmanNookat/protos/gen/go/sso"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Suite struct {
